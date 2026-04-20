@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm sản phẩm mới</title>
+    <style>
+        .container { max-width: 500px; margin: 50px auto; font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-save { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-save:hover { background: #218838; }
+        .btn-refun { background: #6c757d; color: white; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-block; margin-top: 10px; font-size: 14px; }
+        .error-msg { color: red; font-size: 13px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Thêm sản phẩm mới</h2>
+    <div th:if="${message}" style="color: green; background: #d4edda; padding: 10px; margin-bottom: 20px; border-radius: 5px;">
+        [[${message}]]
+    </div>
+    <form th:action="@{/products/save}" th:object="${product}" method="post" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label>Mã sản phẩm:</label>
+            <input type="text" th:field="*{productCode}" />
+            <p class="error-msg" th:if="${#fields.hasErrors('productCode')}" th:errors="*{productCode}"></p>
+        </div>
+
+        <div class="form-group">
+            <label>Tên sản phẩm:</label>
+            <input type="text" th:field="*{name}" />
+            <p class="error-msg" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        </div>
+
+        <div class="form-group">
+            <label>Loại sản phẩm:</label>
+            <select th:field="*{typeId}">
+                <option value="">-- Chọn loại sản phẩm --</option>
+                <option th:each="type : ${listTypes}"
+                        th:value="${type.id}"
+                        th:text="${type.typeName}"></option>
+            </select>
+            <p class="error-msg" th:if="${#fields.hasErrors('typeId')}" th:errors="*{typeId}"></p>
+        </div>
+
+        <div class="form-group">
+            <label>Giá:</label>
+            <input type="number" th:field="*{price}" step="0.01" />
+            <p class="error-msg" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+        </div>
+
+        <div class="form-group">
+            <label>Hình ảnh:</label>
+            <input type="file" name="fileImage" accept="image/png, image/jpeg" />
+        </div>
+
+        <div class="form-group">
+            <label>Mô tả:</label>
+            <textarea th:field="*{description}"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-save">Lưu sản phẩm</button>
+    </form>
+    <hr>
+    <a th:href="@{/products}" class="btn-refun">
+        ⬅ Quay lại danh sách
+    </a>
+</div>
+
+</body>
+</html>

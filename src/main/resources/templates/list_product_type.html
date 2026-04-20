@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách sản phẩm</title>
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    .btn { padding: 5px 10px; text-decoration: none; border-radius: 4px; display: inline-block; }
+    .btn-add { background-color: #28a745; color: white; margin-bottom: 10px; }
+    .btn-edit { background-color: #ffc107; color: black; }
+    .btn-delete { background-color: #dc3545; color: white; }
+
+    /* Navbar CSS */
+    .navbar { background-color: #333; overflow: hidden; font-family: Arial, sans-serif; border-radius: 4px; }
+    .navbar a { float: left; display: block; color: white; text-align: center; padding: 14px 20px; text-decoration: none; }
+    .navbar a:hover { background-color: #ddd; color: black; }
+
+    .dropdown { float: left; overflow: hidden; }
+    .dropdown .dropbtn { font-size: 16px; border: none; outline: none; color: white; padding: 14px 20px; background-color: inherit; font-family: inherit; margin: 0; cursor: pointer; }
+    .dropdown-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; }
+    .dropdown-content a { float: none; color: black; padding: 12px 16px; text-decoration: none; display: block; text-align: left; }
+    .dropdown-content a:hover { background-color: #ddd; }
+    .dropdown:hover .dropdown-content { display: block; }
+
+    .btn-search { background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+    .btn-clear { background-color: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <a th:href="@{/products}">Trang chủ</a>
+  <div class="dropdown">
+    <button class="dropbtn">Sản phẩm ▾</button>
+    <div class="dropdown-content">
+      <a th:href="@{/products}">Tất cả sản phẩm</a>
+      <hr style="margin: 0; border: 0.5px solid #eee;">
+      <a th:href="@{/product-types}">Danh mục</a>
+    </div>
+  </div>
+</div>
+
+<div style="padding: 20px;">
+  <h2>Quản lý loại sản phẩm</h2>
+
+
+  <a th:href="@{/product-types/new}" class="btn btn-add">+ Thêm loại mới</a>
+
+  <table>
+    <thead>
+    <tr>
+      <th style="width: 60%;">Tên loại sản phẩm</th>
+      <th style="width: 20%;">Trạng thái</th>
+      <th style="width: 20%;">Thao tác</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="type : ${listTypes}">
+      <td th:text="${type.typeName}">Điện thoại</td>
+      <td>
+  <span th:text="${type.isActive == 1 ? '● Hoạt động' : '○ Tạm khóa'}"
+        th:style="${type.isActive == 1 ? 'color: green; font-weight: bold;' : 'color: red;'}">
+  </span>
+      </td>
+      <td>
+        <a th:href="@{/product-types/edit/{id}(id=${type.id})}" class="btn btn-edit">Sửa</a>
+        <a th:href="@{/product-types/delete/{id}(id=${type.id})}"
+           class="btn btn-delete"
+           onclick="return confirm('Xóa loại sản phẩm này có thể ảnh hưởng đến các sản phẩm liên quan. Bạn chắc chứ?')">
+          Xóa
+        </a>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(listTypes)}">
+      <td colspan="3" style="text-align: center; padding: 20px; color: #888;">
+        Chưa có loại sản phẩm nào được tạo.
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
