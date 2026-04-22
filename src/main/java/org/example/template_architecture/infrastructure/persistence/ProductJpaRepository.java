@@ -1,5 +1,7 @@
 package org.example.template_architecture.infrastructure.persistence;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -7,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,4 +33,30 @@ public interface ProductJpaRepository extends JpaRepository<ProductDbEntity, Lon
             "(:keyword IS NULL OR :keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.productCode) LIKE LOWER(CONCAT('%', :keyword, '%')))"+
             "AND (:typeId IS NULL OR p.typeId = :typeId)")
     List<ProductDbEntity> searchAndSortProducts(@Param("keyword") String keyword,@Param("typeId") Long typeId, Sort sort);
+
+    @Query("SELECT p FROM ProductDbEntity p WHERE " +
+            "(p.isDeleted = 0 OR p.isDeleted IS NULL) AND " +
+            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:typeId IS NULL OR p.typeId = :typeId)")
+    Page<ProductDbEntity> searchProducts(
+            @Param("keyword") String keyword,
+            @Param("typeId") Long typeId,
+            Pageable pageable);
+
+    @Query("SELECT p FROM ProductDbEntity p WHERE " +
+            "(p.isDeleted = 0 OR p.isDeleted IS NULL) AND " +
+            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:typeId IS NULL OR p.typeId = :typeId) AND " +
+            "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
+            "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
+            "(:startDate IS NULL OR p.createdAt >= :startDate) AND " +
+            "(:endDate IS NULL OR p.createdAt <= :endDate)")
+    Page<ProductDbEntity> searchProductsFull(
+            @Param("keyword") String keyword,
+            @Param("typeId") Long typeId,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
 }

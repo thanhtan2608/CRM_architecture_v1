@@ -5,7 +5,9 @@ import org.example.template_architecture.application.dto.ProductRequest;
 import org.example.template_architecture.application.dto.ProductResponse;
 import org.example.template_architecture.application.dto.ProductTypeResponse;
 import org.example.template_architecture.application.input.*;
+import org.example.template_architecture.domain.entity.PageResult;
 import org.example.template_architecture.domain.entity.Product;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -16,10 +18,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -55,34 +61,66 @@ import java.util.stream.Collectors;
             this.searchProducts=searchProducts;
         }
 @GetMapping
-    public String showProductList(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "typeId", required = false) Long typeId,
-            @RequestParam(value = "sortField", required = false, defaultValue = "createdAt") String sortField,
-            @RequestParam(value = "sortDir", required = false, defaultValue = "desc") String sortDir,
-            Model model) {
+public String showProductList(
+        @RequestParam(name = "page", defaultValue = "1") int page,
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @RequestParam(value = "typeId", required = false) Long typeId,
+        @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
+        @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+        @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+        @RequestParam(value = "sortField", defaultValue = "createdAt") String sortField,
+        @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+        Model model) {
 
-        // 1. Gọi Use Case Tìm kiếm & Sắp xếp (Nó đã tự động lọc isDeleted = 0 ở DB rồi)
-        List<ProductResponse> products = searchProducts.execute(keyword,typeId, sortField, sortDir);
+    int pageSize = 6;
 
-        // 2. Lấy danh sách Loại sản phẩm
-        List<ProductTypeResponse> types = getAllProductTypes.execute();
+    // 1. Làm sạch dữ liệu (Clean data)
+    String cleanKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+    Long cleanTypeId = (typeId != null && typeId > 0) ? typeId : null;
 
-        // 3. Tính toán hướng sắp xếp đảo ngược (Phục vụ cho các nút bấm trên tiêu đề bảng)
-        String reverseSortDir = sortDir.equals("asc") ? "desc" : "asc";
+    // Chuyển đổi LocalDate sang LocalDateTime để khớp với Repository
+    LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
+    LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
 
-        // 4. ĐẨY TOÀN BỘ DỮ LIỆU RA GIAO DIỆN (Lấy giá trị thật, KHÔNG hardcode "")
-        model.addAttribute("listProducts", products); // HTML của bạn đang dùng ${listProducts}
-        model.addAttribute("listTypes", types);       // Để hiển thị dropdown loại SP
+    // 2. Gọi Use Case (BẮT BUỘC ĐÚNG THỨ TỰ THAM SỐ ĐÃ CHỐT)
+    // Thứ tự: page, size, keyword, typeId, minPrice, maxPrice, start, end, sortBy, sortDir
+    PageResult<ProductResponse> pageResult = getAllProducts.execute(
+            page,
+            pageSize,
+            cleanKeyword,
+            cleanTypeId,
+            minPrice,
+            maxPrice,
+            startDateTime,
+            endDateTime,
+            sortField,
+            sortDir
+    );
 
-        // Giữ lại trạng thái trên giao diện để người dùng biết họ đang tìm/xếp cái gì
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("typeId", typeId);
-        model.addAttribute("sortField", sortField);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("reverseSortDir", reverseSortDir);
+    // 3. Lấy dữ liệu bổ trợ cho giao diện
+    List<ProductTypeResponse> types = getAllProductTypes.execute();
+    String reverseSortDir = sortDir.equalsIgnoreCase("asc") ? "desc" : "asc";
 
-        return "list_product";
+    // 4. Đẩy dữ liệu ra View
+    model.addAttribute("listProducts", pageResult.getItems());
+    model.addAttribute("currentPage", pageResult.getCurrentPage());
+    model.addAttribute("totalPages", pageResult.getTotalPages());
+    model.addAttribute("totalItems", pageResult.getTotalElements());
+    model.addAttribute("listTypes", types);
+
+    // 5. Giữ trạng thái Form (Để khi bấm phân trang không bị mất lọc)
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("typeId", typeId);
+    model.addAttribute("minPrice", minPrice);
+    model.addAttribute("maxPrice", maxPrice);
+    model.addAttribute("startDate", startDate);
+    model.addAttribute("endDate", endDate);
+    model.addAttribute("sortField", sortField);
+    model.addAttribute("sortDir", sortDir);
+    model.addAttribute("reverseSortDir", reverseSortDir);
+
+    return "list_product";
     }
         // Mở trang thêm mới sản phẩm
         @GetMapping("/new")

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm Danh Mục</title>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Arial, sans-serif; }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #28a745;
+            outline: none;
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: #333; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📂 Thêm Loại Sản Phẩm</h2>
+    <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 25px;">
+
+    <form th:action="@{/product-types/add}" th:object="${productType}" method="post">
+
+        <div class="form-group">
+            <label>Tên danh mục mới:</label>
+            <input type="text" name="typeName" th:value="*{typeName}"
+                   required autocomplete="off"/>
+
+            <p style="color: #dc3545; font-size: 13px; margin-top: 5px;"
+               th:if="${#fields.hasErrors('typeName')}"
+               th:errors="*{typeName}"></p>
+        </div>
+
+        <div class="form-group">
+            <label>Trạng thái danh mục:</label>
+            <select name="isActive" class="form-control" style="width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; outline: none; transition: border-color 0.3s;">
+                <option value="1" th:selected="*{isActive == 1}">✅ Đang hoạt động (1)</option>
+                <option value="0" th:selected="*{isActive == 0}">❌ Tạm khóa (0)</option>
+                <option value="2" th:selected="*{isActive == 2}">➕ Khác (2)</option>
+            </select>
+
+            <p style="color: #dc3545; font-size: 13px; margin-top: 5px;"
+               th:if="${#fields.hasErrors('isActive')}"
+               th:errors="*{isActive}"></p>
+        </div>
+
+        <button type="submit" class="btn-save">✨ LƯU</button>
+    </form>
+
+    <a th:href="@{/list_product_type}" class="back-link">⬅ Quay lại danh sách</a>
+</div>
+
+</body>
+</html>

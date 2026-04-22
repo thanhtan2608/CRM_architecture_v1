@@ -26,6 +26,26 @@
 
         .btn-search { background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
         .btn-clear { background-color: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; text-decoration: none; }
+   .page-link {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    color: #007bff;
+    background-color: #fff;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.page-link:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.page-link.active {
+    z-index: 3;
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
     </style>
 </head>
 <body>
@@ -155,6 +175,31 @@
             </tbody>
         </table>
     </form>
+</div>
+<div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 20px; flex-wrap: wrap;">
+
+    <a th:if="${currentPage > 1}"
+       th:href="@{/products(page=1, keyword=${keyword}, typeId=${typeId}, sortField=${sortField}, sortDir=${sortDir})}"
+       class="page-link">⏮ Đầu</a>
+
+    <span th:if="${currentPage > 3}">...</span>
+
+    <th:block th:each="i : ${#numbers.sequence(1, totalPages)}">
+        <a th:if="${i >= currentPage - 2 && i <= currentPage + 2}"
+           th:href="@{/products(page=${i}, keyword=${keyword}, typeId=${typeId}, sortField=${sortField}, sortDir=${sortDir})}"
+           th:text="${i}"
+           th:class="${i == currentPage ? 'page-link active' : 'page-link'}"
+           style="padding: 8px 12px; border: 1px solid #ddd; text-decoration: none; border-radius: 4px;"
+           th:styleappend="${i == currentPage ? 'background-color: #007bff; color: white;' : 'color: #007bff;'}">
+        </a>
+    </th:block>
+
+    <span th:if="${currentPage < totalPages - 2}">...</span>
+
+    <a th:if="${currentPage < totalPages}"
+       th:href="@{/products(page=${totalPages}, keyword=${keyword}, typeId=${typeId}, sortField=${sortField}, sortDir=${sortDir})}"
+       class="page-link">Cuối ⏭</a>
+
 </div>
 
 </body>

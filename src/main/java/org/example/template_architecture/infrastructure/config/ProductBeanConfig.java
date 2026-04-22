@@ -61,4 +61,12 @@ public class ProductBeanConfig {
     public ISearchProducts searchProducts(ProductRepository repository, ProductMapper mapper){
         return new SearchProductsImpl(repository,mapper);
     }
+    @Bean
+    public ICreateProductType createProductType(ProductTypeRepository productTypeRepository) {
+        return new CreateProductTypeImpl(productTypeRepository);
+    }
+    @Bean
+    public IDeleteProductType deleteProductType(ProductTypeRepository productTypeRepository) {
+        return new DeleteProductTypeImpl(productTypeRepository);
+    }
 }

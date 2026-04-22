@@ -1,11 +1,17 @@
 package org.example.template_architecture.infrastructure.persistence;
 
 import org.example.template_architecture.application.mapper.ProductMapper;
+import org.example.template_architecture.domain.entity.PageResult;
 import org.example.template_architecture.domain.entity.Product;
 import org.example.template_architecture.domain.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,10 +19,12 @@ import java.util.stream.Collectors;
 @Repository
 public class ProductRepositoryImpl implements ProductRepository {
     private final ProductJpaRepository jpaRepository;
+    private final ProductMapper dbMapper;
 
 
-    public ProductRepositoryImpl(ProductJpaRepository jpaRepository) {
+    public ProductRepositoryImpl(ProductJpaRepository jpaRepository,ProductMapper dbMapper) {
         this.jpaRepository = jpaRepository;
+        this.dbMapper=dbMapper;
     }
 
     @Override
@@ -110,5 +118,46 @@ public class ProductRepositoryImpl implements ProductRepository {
         return entities.stream()
                 .map(this::mapToDomain)
                 .collect(Collectors.toList());
+    }
+    @Override
+    public PageResult<Product> getProducts(int page, int size, String keyword, Long typeId,
+                                           BigDecimal minPrice, BigDecimal maxPrice,
+                                           LocalDateTime start, LocalDateTime end,
+                                           String sortBy, String sortDir) {
+
+        // 1. Xử lý logic Sắp xếp (Sort)
+        // Nếu sortBy bị null thì mặc định theo "id", sortDir mặc định là "desc"
+        Sort sort = (sortDir != null && sortDir.equalsIgnoreCase("asc"))
+                ? Sort.by(sortBy != null ? sortBy : "id").ascending()
+                : Sort.by(sortBy != null ? sortBy : "id").descending();
+
+        // 2. Tạo Pageable kết hợp Phân trang và Sắp xếp
+        // Spring Data JPA sẽ tự tính toán LIMIT và OFFSET dựa trên cái này
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+
+        // 3. Gọi JpaRepository với đầy đủ các tham số lọc
+        // Đảm bảo jpaRepository.searchProducts đã được khai báo nhận đủ các tham số này
+        Page<ProductDbEntity> pageData = jpaRepository.searchProductsFull(
+                keyword,
+                typeId,
+                minPrice,
+                maxPrice,
+                start,
+                end,
+                pageable
+        );
+
+        // 4. Map từ Database Entity sang Domain Entity (Dùng hàm mapToDomain bạn đã viết)
+        List<Product> domainItems = pageData.getContent().stream()
+                .map(this::mapToDomain)
+                .collect(Collectors.toList());
+
+        // 5. Trả về kết quả bọc trong PageResult của Domain
+        return new PageResult<>(
+                domainItems,
+                pageData.getTotalPages(),
+                page,
+                pageData.getTotalElements()
+        );
     }
 }
