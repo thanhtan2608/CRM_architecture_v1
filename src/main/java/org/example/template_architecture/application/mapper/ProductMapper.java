@@ -3,6 +3,7 @@ package org.example.template_architecture.application.mapper;
 import org.example.template_architecture.application.dto.ProductRequest;
 import org.example.template_architecture.application.dto.ProductResponse;
 import org.example.template_architecture.domain.entity.Product;
+import org.example.template_architecture.infrastructure.persistence.ProductDbEntity;
 
 import java.time.format.DateTimeFormatter;
 
@@ -57,5 +58,39 @@ public class ProductMapper {
                 formattedDateUpdate,
                 entity.getIsDeleted()
         );
+    }
+    public ProductDbEntity mapToDb(Product product) {
+        if (product == null) return null;
+        ProductDbEntity db = new ProductDbEntity();
+        db.setId(product.getId());
+        db.setProductCode(product.getProductCode());
+        db.setTypeId(product.getTypeId());
+        db.setName(product.getName());
+        db.setPrice(product.getPrice());
+        db.setImageUrl(product.getImageUrl());
+        db.setDescription(product.getDescription());
+        db.setIsDeleted(product.getIsDeleted());
+        // createdAt và updatedAt sẽ được Hibernate tự sinh nhờ @CreationTimestamp
+        return db;
+    }
+
+    public Product mapToDomain(ProductDbEntity db) {
+        if (db == null) return null;
+        Product domain = new Product();
+        domain.setId(db.getId());
+        domain.setProductCode(db.getProductCode());
+        if (db.getProductType() != null) {
+            domain.setTypeName(db.getProductType().getTypeName());
+        } else {
+            domain.setTypeName("Chưa phân loại");
+        }
+        domain.setName(db.getName());
+        domain.setPrice(db.getPrice());
+        domain.setImageUrl(db.getImageUrl());
+        domain.setDescription(db.getDescription());
+        domain.setIsDeleted(db.getIsDeleted());
+        domain.setCreatedAt(db.getCreatedAt());
+        domain.setUpdatedAt(db.getUpdatedAt());
+        return domain;
     }
 }

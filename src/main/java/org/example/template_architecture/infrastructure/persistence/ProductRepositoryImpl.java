@@ -30,62 +30,27 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product save(Product product) {
         // 1. Chuyển đổi từ Domain Entity sang DbEntity (để JPA hiểu)
-        ProductDbEntity dbEntity = mapToDb(product);
+        ProductDbEntity dbEntity = dbMapper.mapToDb(product);
 
         // 2. Gọi JPA để lưu vào MySQL
         ProductDbEntity savedEntity = jpaRepository.save(dbEntity);
 
         // 3. Chuyển ngược từ DbEntity vừa lưu xong sang Domain Entity để trả về
-        return mapToDomain(savedEntity);
+        return dbMapper.mapToDomain(savedEntity);
     }
     @Override
     public Optional<Product> findById(Long id) {
-        return jpaRepository.findById(id).map(this::mapToDomain);
+        return jpaRepository.findById(id).map(dbMapper::mapToDomain);
     }
 
     @Override
     public List<Product> findAll() {
         return jpaRepository.findAll().stream()
-                .map(this::mapToDomain)
+                .map(dbMapper::mapToDomain)
                 .collect(Collectors.toList());
     }
 
-    // --- Các hàm hỗ trợ Mapping nội bộ ---
 
-    private ProductDbEntity mapToDb(Product product) {
-        if (product == null) return null;
-        ProductDbEntity db = new ProductDbEntity();
-        db.setId(product.getId());
-        db.setProductCode(product.getProductCode());
-        db.setTypeId(product.getTypeId());
-        db.setName(product.getName());
-        db.setPrice(product.getPrice());
-        db.setImageUrl(product.getImageUrl());
-        db.setDescription(product.getDescription());
-        db.setIsDeleted(product.getIsDeleted());
-        // createdAt và updatedAt sẽ được Hibernate tự sinh nhờ @CreationTimestamp
-        return db;
-    }
-
-    private Product mapToDomain(ProductDbEntity db) {
-        if (db == null) return null;
-        Product domain = new Product();
-        domain.setId(db.getId());
-        domain.setProductCode(db.getProductCode());
-        if (db.getProductType() != null) {
-            domain.setTypeName(db.getProductType().getTypeName());
-        } else {
-            domain.setTypeName("Chưa phân loại");
-        }
-        domain.setName(db.getName());
-        domain.setPrice(db.getPrice());
-        domain.setImageUrl(db.getImageUrl());
-        domain.setDescription(db.getDescription());
-        domain.setIsDeleted(db.getIsDeleted());
-        domain.setCreatedAt(db.getCreatedAt());
-        domain.setUpdatedAt(db.getUpdatedAt());
-        return domain;
-    }
     @Override
     public boolean existsByProductCode(String code) {
         return jpaRepository.existsByProductCode(code);
@@ -97,7 +62,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Optional<Product> findByProductCode(String code) {
         return jpaRepository.findByProductCode(code)
-                .map(this::mapToDomain); // Sử dụng hàm mapToDomain bạn đã viết trước đó
+                .map(dbMapper::mapToDomain);
     }
 
     @Override
@@ -116,7 +81,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
         // 3. Map từ Entity của Database sang Entity của Domain
         return entities.stream()
-                .map(this::mapToDomain)
+                .map(dbMapper::mapToDomain)
                 .collect(Collectors.toList());
     }
     @Override
@@ -149,7 +114,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
         // 4. Map từ Database Entity sang Domain Entity (Dùng hàm mapToDomain bạn đã viết)
         List<Product> domainItems = pageData.getContent().stream()
-                .map(this::mapToDomain)
+                .map(dbMapper::mapToDomain)
                 .collect(Collectors.toList());
 
         // 5. Trả về kết quả bọc trong PageResult của Domain

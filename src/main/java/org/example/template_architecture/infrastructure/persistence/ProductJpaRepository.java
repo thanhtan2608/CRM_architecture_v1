@@ -34,18 +34,12 @@ public interface ProductJpaRepository extends JpaRepository<ProductDbEntity, Lon
             "AND (:typeId IS NULL OR p.typeId = :typeId)")
     List<ProductDbEntity> searchAndSortProducts(@Param("keyword") String keyword,@Param("typeId") Long typeId, Sort sort);
 
-    @Query("SELECT p FROM ProductDbEntity p WHERE " +
-            "(p.isDeleted = 0 OR p.isDeleted IS NULL) AND " +
-            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
-            "(:typeId IS NULL OR p.typeId = :typeId)")
-    Page<ProductDbEntity> searchProducts(
-            @Param("keyword") String keyword,
-            @Param("typeId") Long typeId,
-            Pageable pageable);
 
     @Query("SELECT p FROM ProductDbEntity p WHERE " +
             "(p.isDeleted = 0 OR p.isDeleted IS NULL) AND " +
-            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:keyword IS NULL" +
+            "    OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+            "    OR LOWER(p.productCode) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
             "(:typeId IS NULL OR p.typeId = :typeId) AND " +
             "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +

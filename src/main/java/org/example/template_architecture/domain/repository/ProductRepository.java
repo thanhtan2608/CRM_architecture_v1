@@ -16,7 +16,7 @@ public interface ProductRepository {
     void deleteById(Long id);
     Optional<Product> findByProductCode(String code);
     void restore(String code);
-    List<Product> searchAndSort(String keyword, Long typeId, String sortField, String sortDir);
+   List<Product> searchAndSort(String keyword, Long typeId, String sortField, String sortDir);
     PageResult<Product> getProducts(
             int page, int size, String keyword, Long typeId,
             BigDecimal minPrice, BigDecimal maxPrice,

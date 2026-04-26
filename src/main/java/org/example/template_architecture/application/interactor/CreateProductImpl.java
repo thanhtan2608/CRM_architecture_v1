@@ -24,7 +24,9 @@ public class CreateProductImpl implements ICreateProduct {
         Product product = productMapper.toEntity(request);
 
         // 2. Gán các giá trị mặc định hoặc dữ liệu ngoài (như ảnh)
+        product.validate();
         product.setIsDeleted(0);
+
         product.setImageUrl(fileName);
 
         // 3. Lưu

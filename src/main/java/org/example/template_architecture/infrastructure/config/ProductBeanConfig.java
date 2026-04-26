@@ -69,4 +69,12 @@ public class ProductBeanConfig {
     public IDeleteProductType deleteProductType(ProductTypeRepository productTypeRepository) {
         return new DeleteProductTypeImpl(productTypeRepository);
     }
+    @Bean
+    public IGetActiveProductTypes getActiveProductTypes(IGetAllProductTypes getAllProductTypes){
+        return new GetActiveProductTypesImpl(getAllProductTypes);
+    }
+    @Bean
+    public IFileStorageService fileStorageService(){
+        return new FileStorageServiceImpl();
+    }
 }
